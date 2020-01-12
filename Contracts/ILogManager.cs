@@ -4,6 +4,16 @@
 
     public interface ILogManager
     {
-        void Log(Exception ex);
+        void GlobalLog(Exception ex);
+
+        void ConsoleLog(Exception ex);
+
+        void EmailLog(Exception ex);
+
+        void GlobalLog(string message);
+
+        void ConsoleLog(string message);
+
+        void EmailLog(string message);
     }
 }

@@ -11,12 +11,24 @@ namespace SimpleLogger.Loggers
     {
         private readonly EmailLoggerConfig config;
 
+        private readonly SmtpClient smtpClient;
+
         public EmailLogger(EmailLoggerConfig config)
         {
             this.config = config;
+
+            this.smtpClient = new SmtpClient()
+            {
+                Host = this.config.SmtpHost,
+                Port = this.config.SmtpPort,
+                EnableSsl = true,
+                UseDefaultCredentials = false,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                Credentials = new NetworkCredential(this.config.Username, this.config.Password),
+            };
         }
 
-        public void Log(System.Exception ex)
+        public void LogException(Exception ex)
         {
             var template = @"Date: {{date}}\n" +
                             "Thread: {{thread}}\n" +
@@ -40,17 +52,12 @@ namespace SimpleLogger.Loggers
             template = template.Replace("{{innerExceptionMessage}}", ex.InnerException?.Message ?? "None");
             template = template.Replace("{{innerExceptionStackTrace}}", ex.InnerException?.StackTrace ?? "None");
 
-            SmtpClient smtpClient = new SmtpClient()
-            {
-                Host = this.config.SmtpHost,
-                Port = this.config.SmtpPort,
-                EnableSsl = true,
-                UseDefaultCredentials = false,
-                DeliveryMethod = SmtpDeliveryMethod.Network,
-                Credentials = new NetworkCredential(this.config.Username, this.config.Password),
-            };
-            
-            smtpClient.Send(new MailMessage(this.config.From, this.config.To, this.config.ApplicationName, template));
+            this.smtpClient.Send(new MailMessage(this.config.From, this.config.To, this.config.ApplicationName, template));
+        }
+
+        public void LogMessage(string message)
+        {
+            this.smtpClient.Send(new MailMessage(this.config.From, this.config.To, this.config.ApplicationName, message));
         }
     }
 }

@@ -4,7 +4,7 @@ using System;
 
 namespace SimpleLogger.Loggers
 {
-    public sealed class ConsoleLogger : ICustomLogger
+    internal sealed class ConsoleLogger : ICustomLogger
     {
         internal ConsoleLogger(ConsoleLoggerConfig config)
         {
@@ -13,9 +13,8 @@ namespace SimpleLogger.Loggers
 
         internal ConsoleColor Color { get; private set; }
 
-        public void Log(System.Exception ex)
-        {
-            System.Console.WriteLine(ex.Message);
-        }
+        public void LogException(System.Exception ex) => this.LogMessage(ex.Message);
+
+        public void LogMessage(string message) => Console.WriteLine(message);
     }
 }

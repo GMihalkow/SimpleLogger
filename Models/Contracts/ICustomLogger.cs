@@ -4,6 +4,8 @@
 
     internal interface ICustomLogger
     {
-        void Log(Exception ex);
+        void LogException(Exception ex);
+
+        void LogMessage(string message);
     }
 }
