@@ -1,4 +1,5 @@
-﻿using SimpleLogger.Models.Console.Configuration;
+﻿using SimpleLogger.Helpers;
+using SimpleLogger.Models.Console.Configuration;
 using SimpleLogger.Models.Contracts;
 using System;
 
@@ -13,8 +14,14 @@ namespace SimpleLogger.Loggers
 
         internal ConsoleColor Color { get; private set; }
 
-        public void LogException(System.Exception ex) => this.LogMessage(ex.Message);
+        public void LogException(Exception ex)
+        {
+            ConsoleHelper.Log(ex.Message, ConsoleColor.Red);
+        }
 
-        public void LogMessage(string message) => Console.WriteLine(message);
+        public void LogMessage(string message)
+        {
+            ConsoleHelper.Log(message, this.Color);
+        }
     }
 }
