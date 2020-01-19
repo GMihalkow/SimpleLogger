@@ -54,7 +54,7 @@ namespace SimpleLogger
 
         public void ConsoleLog(string message) => this.ConsoleLogger.LogMessage(message);
 
-        public void ConsoleLog(Exception ex) => this.consoleLogger.LogException(ex);
+        public void ConsoleLog(Exception ex) => this.consoleLogger.LogException(ex, additionalMessage: null);
 
         public void EmailLog(string message) => this.EmailLogger.LogMessage(message);
 
@@ -66,10 +66,10 @@ namespace SimpleLogger
             if (this.EmailLogger != null) { this.EmailLogger.LogMessage(message); }
         }
 
-        public void GlobalLog(Exception ex)
+        public void GlobalExceptionLog(Exception ex, string additionalMessage = null)
         {
-            if (this.ConsoleLogger != null) { this.ConsoleLogger.LogException(ex); }
-            if (this.EmailLogger != null) { this.EmailLogger.LogException(ex); }
+            if (this.ConsoleLogger != null) { this.ConsoleLogger.LogException(ex, additionalMessage); }
+            if (this.EmailLogger != null) { this.EmailLogger.LogException(ex, additionalMessage); }
         }
     }
 }

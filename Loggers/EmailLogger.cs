@@ -9,6 +9,18 @@ namespace SimpleLogger.Loggers
 {
     internal sealed class EmailLogger : ICustomLogger
     {
+        private readonly string errorTemplate = 
+            @"Date: {{date}}" + Environment.NewLine +
+            "Thread: {{thread}}" + Environment.NewLine + 
+            "Application: {{app}}" + Environment.NewLine +
+            "Exception Type: {{exceptionType}}" + Environment.NewLine +
+            "Exception Message: {{exceptionMessage}}" + Environment.NewLine +
+            "Stack Trace: {{stackTrace}}" + Environment.NewLine +
+            "Log Level: {{level}}" + Environment.NewLine +
+            "Inner Exception Type: {{innerExceptionType}}" + Environment.NewLine +
+            "Inner Exception Message: {{innerExceptionMessage}}" + Environment.NewLine + 
+            "Inner Exception Stack Trace: {{innerExceptionStackTrace}}";
+
         private readonly EmailLoggerConfig config;
 
         private readonly SmtpClient smtpClient;
@@ -30,34 +42,41 @@ namespace SimpleLogger.Loggers
 
         public void LogException(Exception ex)
         {
-            var template = @"Date: {{date}}\n" +
-                            "Thread: {{thread}}\n" +
-                            "Application: {{app}}\n" +
-                            "Exception Type: {{exceptionType}}\n" +
-                            "Exception Message: {{exceptionMessage}}\n" +
-                            "Stack Trace: {{stackTrace}}\n" +
-                            "Log Level: {{level}}\n" +
-                            "Inner Exception Type: {{innerExceptionType}}\n" +
-                            "Inner Exception Message: {{innerExceptionMessage}}\n" +
-                            "Inner Exception Stack Trace: {{innerExceptionStackTrace}}";
+            var result = this.GenerateMessage(ex);
 
-            template = template.Replace("{{date}}", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"));
-            template = template.Replace("{{thread}}", Thread.CurrentThread.ManagedThreadId.ToString());
-            template = template.Replace("{{app}}", this.config.ApplicationName);
-            template = template.Replace("{{exceptionType}}", ex.GetType().FullName);
-            template = template.Replace("{{exceptionMessage}}", ex.Message);
-            template = template.Replace("{{stackTrace}}", ex.StackTrace);
-            template = template.Replace("{{level}}", this.config.Level.ToString());
-            template = template.Replace("{{innerExceptionType}}", ex.InnerException?.GetType().Name ?? "None");
-            template = template.Replace("{{innerExceptionMessage}}", ex.InnerException?.Message ?? "None");
-            template = template.Replace("{{innerExceptionStackTrace}}", ex.InnerException?.StackTrace ?? "None");
+            this.smtpClient.Send(new MailMessage(this.config.From, this.config.To, this.config.ApplicationName, result));
+        }
 
-            this.smtpClient.Send(new MailMessage(this.config.From, this.config.To, this.config.ApplicationName, template));
+        public void LogException(Exception ex, string additionalMessage)
+        {
+            var result = this.GenerateMessage(ex, additionalMessage);
+
+            this.smtpClient.Send(new MailMessage(this.config.From, this.config.To, this.config.ApplicationName, result));
         }
 
         public void LogMessage(string message)
         {
             this.smtpClient.Send(new MailMessage(this.config.From, this.config.To, this.config.ApplicationName, message));
+        }
+
+        private string GenerateMessage(Exception ex, string additionalMessage = null)
+        {
+            var result = errorTemplate;
+
+            result = result.Replace("{{date}}", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"));
+            result = result.Replace("{{thread}}", Thread.CurrentThread.ManagedThreadId.ToString());
+            result = result.Replace("{{app}}", this.config.ApplicationName);
+            result = result.Replace("{{exceptionType}}", ex.GetType().FullName);
+            result = result.Replace("{{exceptionMessage}}", ex.Message);
+            result = result.Replace("{{stackTrace}}", ex.StackTrace);
+            result = result.Replace("{{level}}", this.config.Level.ToString());
+            result = result.Replace("{{innerExceptionType}}", ex.InnerException?.GetType().Name ?? "None");
+            result = result.Replace("{{innerExceptionMessage}}", ex.InnerException?.Message ?? "None");
+            result = result.Replace("{{innerExceptionStackTrace}}", ex.InnerException?.StackTrace ?? "None");
+
+            if (additionalMessage != null) { result = result + "\n--" + additionalMessage; }
+
+            return result.TrimEnd();
         }
     }
 }

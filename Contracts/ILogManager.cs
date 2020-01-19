@@ -4,7 +4,7 @@
 
     public interface ILogManager
     {
-        void GlobalLog(Exception ex);
+        void GlobalExceptionLog(Exception ex, string additionalMessage = null);
 
         void ConsoleLog(Exception ex);
 
